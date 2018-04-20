@@ -66,7 +66,7 @@ export default class CommunicationTable extends React.Component {
       result.sent = moment(get(communication, 'sent')).add(1, 'days').format("YYYY-MM-DD")
       result.received = moment(get(communication, 'received')).add(1, 'days').format("YYYY-MM-DD")
       result.subject = get(communication, 'subject.display') ? get(communication, 'subject.display') : get(communication, 'subject.reference')
-      result.recipient = get(communication, 'recipient.display') ? get(communication, 'recipient.display') : get(communication, 'subject.reference')
+      result.recipient = get(communication, 'recipient[0].display') ? get(communication, 'recipient[0].display') : get(communication, 'recipient[0].reference')
       result.identifier = get(communication, 'identifier[0].type.text');
       result.definition = get(communication, 'definition[0].display');
       result.category = get(communication, 'category[0].text');
