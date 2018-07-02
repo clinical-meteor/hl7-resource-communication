@@ -1,12 +1,20 @@
 ##  cllinical:hl7-resource-communication   
 
-HL7 FHIR Resource - Communication
+
+#### Licensing  
+
+![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 
---------------------------------------------  
-#### Schema Version 
+#### Integration & Verification Tests  
 
-The resource in this package implements the `FHIR 1.6.0 - STU3 Ballot` version of the Communication resource schema, specified at  [http://hl7.org/fhir/2016Sep/communication.html](http://hl7.org/fhir/2016Sep/communication.html).  
+[![CircleCI](https://circleci.com/gh/clinical-meteor/hl7-resource-communication/tree/master.svg?style=svg)](https://circleci.com/gh/clinical-meteor/hl7-resource-communication/tree/master)
+
+
+#### API Reference  
+
+This package implements the FHIR Communication resource schema provided at [https://www.hl7.org/fhir/communication.html](https://www.hl7.org/fhir/careplan.html).
+
 
 
 --------------------------------------------  
@@ -167,12 +175,6 @@ NOAUTH=true meteor
 #### Conformance Statement  
 
 TBD.
-
-
---------------------------------------------  
-#### Licensing   
-
-![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 
 --------------------------------------------  
