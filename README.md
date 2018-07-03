@@ -13,7 +13,7 @@
 
 #### API Reference  
 
-This package implements the FHIR Communication resource schema provided at [https://www.hl7.org/fhir/communication.html](https://www.hl7.org/fhir/careplan.html).
+This package implements the FHIR Communication resource schema provided at [https://www.hl7.org/fhir/DSTU2/communication.html](https://www.hl7.org/fhir/DSTU2/communication.html).
 
 
 
