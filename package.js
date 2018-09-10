@@ -1,6 +1,6 @@
 Package.describe({
   name: 'clinical:hl7-resource-communication',
-  version: '0.1.1',
+  version: '0.1.2',
   summary: 'HL7 FHIR Resource - Communication',
   git: 'https://github.com/dpdonohue/hl7-resource-communication',
   documentation: 'README.md'
@@ -52,8 +52,9 @@ Package.onUse(function (api) {
 
 Npm.depends({
   "material-ui": "0.20.0",
-  "lodash": "4.17.4",
-  "simpl-schema": "1.5.3"
+  "simpl-schema": "1.5.3",
+  "moment": "2.22.2",
+  "lodash": "4.17.4"
 });
 
 
