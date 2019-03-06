@@ -1,6 +1,6 @@
 Package.describe({
   name: 'clinical:hl7-resource-communication',
-  version: '0.1.2',
+  version: '0.1.3',
   summary: 'HL7 FHIR Resource - Communication',
   git: 'https://github.com/dpdonohue/hl7-resource-communication',
   documentation: 'README.md'
