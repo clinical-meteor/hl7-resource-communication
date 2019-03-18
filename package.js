@@ -1,6 +1,6 @@
 Package.describe({
   name: 'clinical:hl7-resource-communication',
-  version: '0.1.3',
+  version: '0.1.4',
   summary: 'HL7 FHIR Resource - Communication',
   git: 'https://github.com/dpdonohue/hl7-resource-communication',
   documentation: 'README.md'
@@ -24,7 +24,7 @@ Package.onUse(function (api) {
   api.use('http');
   api.use('react-meteor-data@0.2.15');
 
-  api.use('clinical:extended-api@2.2.2');
+  api.use('clinical:extended-api@2.4.0');
   api.use('clinical:base-model@1.4.0');
   api.use('clinical:user-model@1.6.2');
   api.use('matb33:collection-hooks@0.7.15');
