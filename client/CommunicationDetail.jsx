@@ -41,7 +41,7 @@ let defaultCommunication = {
 Session.setDefault('communicationUpsert', false);
 Session.setDefault('selectedCommunication', false);
 
-export default class CommunicationDetail extends React.Component {
+export class CommunicationDetail extends React.Component {
   getMeteorData() {
     let data = {
       communicationId: false,
@@ -78,8 +78,7 @@ export default class CommunicationDetail extends React.Component {
     return (
       <div id={this.props.id} className="communicationDetail">
         <CardText>
-          <Grid>
-            <Row style={{paddingBottom: '20px', paddingTop: '40px'}}>
+            <Row>
               <Col md={2}>
                 <TextField
                   id='categoryInput'
@@ -166,7 +165,6 @@ export default class CommunicationDetail extends React.Component {
                 {/* { this.determineButtons(this.data.communicationId) }   */}
               </Col>
             </Row>
-          </Grid>
 
         </CardText>
       </div>
@@ -313,3 +311,4 @@ export default class CommunicationDetail extends React.Component {
 
 ReactMixin(CommunicationDetail.prototype, ReactMeteorData);
 
+export default CommunicationDetail;

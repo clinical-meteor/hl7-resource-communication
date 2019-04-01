@@ -1,7 +1,7 @@
 import { CardText, CardTitle } from 'material-ui/Card';
 import { Tab, Tabs } from 'material-ui/Tabs';
 
-import { Glass, GlassCard, FullPageCanvas } from 'meteor/clinical:glass-ui';
+import { Glass, GlassCard, FullPageCanvas, DynamicSpacer } from 'meteor/clinical:glass-ui';
 
 import CommunicationDetail from './CommunicationDetail';
 import CommunicationTable from './CommunicationTable';
@@ -71,24 +71,16 @@ export class CommunicationsPage extends React.Component {
     return (
       <div id="communicationsPage">
         <FullPageCanvas>
-          <GlassCard height="auto">
+          <CommunicationDetail 
+            id='newCommunication' />
+          {/* <DynamicSpacer /> */}
+
+          <GlassCard height="auto" style={{margin: '16px'}}>
             <CardTitle
-              title="Communications"
+              title="Communication Log"
             />
             <CardText>
-              <Tabs id='communicationsPageTabs' default value={this.data.tabIndex} onChange={this.handleTabChange} initialSelectedIndex={1}>
-                 <Tab className="newCommunicationTab" label='New' style={this.data.style.tab} onActive={ this.onNewTab } value={0}>
-                   <CommunicationDetail id='newCommunication' />
-                 </Tab>
-                 <Tab className="communicationListTab" label='Communications' onActive={this.handleActive} style={this.data.style.tab} value={1}>
-                   <CommunicationTable showBarcodes={true} />
-                 </Tab>
-                 <Tab className="communicationDetailTab" label='Detail' onActive={this.handleActive} style={this.data.style.tab} value={2}>
-                   {/* <CommunicationDetail id='communicationDetails' currentCommunication={this.data.currentCommunication} /> */}
-                 </Tab>
-             </Tabs>
-
-
+              <CommunicationTable showBarcodes={true} />
             </CardText>
           </GlassCard>
         </FullPageCanvas>

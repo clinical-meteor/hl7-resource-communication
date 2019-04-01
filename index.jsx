@@ -4,6 +4,9 @@
 import CommunicationsPage from './client/CommunicationsPage';
 import CommunicationTable from './client/CommunicationTable';
 
+import { Communication, Communications, CommunicationSchema, CommunicationDstu2, CommunicationStu3 } from './lib/Communications';
+
+
 var DynamicRoutes = [{
   'name': 'CommunicationPage',
   'path': '/communications',
@@ -22,7 +25,13 @@ export {
   DynamicRoutes, 
 
   CommunicationsPage,
-  CommunicationTable
+  CommunicationTable,
+  
+  Communication,
+  Communications,
+  CommunicationSchema,
+  CommunicationDstu2, 
+  CommunicationStu3
 };
 
 

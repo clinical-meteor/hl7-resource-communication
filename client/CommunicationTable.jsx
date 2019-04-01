@@ -1,5 +1,5 @@
 import Avatar from 'material-ui/Avatar';
-import FlatButton from 'material-ui/FlatButton';
+import { FlatButton, RaisedButton } from 'material-ui';
 import { HTTP } from 'meteor/http';
 import React from 'react';
 import { ReactMeteorData } from 'meteor/react-meteor-data';
@@ -7,7 +7,7 @@ import ReactMixin from 'react-mixin';
 import { Table } from 'react-bootstrap';
 
 import { get } from 'lodash';
-
+// import { Communications } from 'meteor/clinical:hl7-resource-communication';
 
 export default class CommunicationTable extends React.Component {
   getMeteorData() {
@@ -54,23 +54,39 @@ export default class CommunicationTable extends React.Component {
       let result = {
         _id: communication._id,
         subject: '',
+        subjectReference: '',
         recipient: '',
         identifier: '',
-        definition: '',
+        telecom: '',
         sent: '',
         received: '',
         category: '',
-        payload: ''
+        payload: '',
+        status: ''
       };
 
-      result.sent = moment(get(communication, 'sent')).add(1, 'days').format("YYYY-MM-DD")
-      result.received = moment(get(communication, 'received')).add(1, 'days').format("YYYY-MM-DD")
+      if(get(communication, 'sent')){
+        result.sent = moment(get(communication, 'sent')).add(1, 'days').format("YYYY-MM-DD")
+      }
+      if(get(communication, 'received')){
+        result.received = moment(get(communication, 'received')).add(1, 'days').format("YYYY-MM-DD")
+      }
+
+      let telecomString = "";
+      if(get(communication, 'recipient.reference')){
+        if(get(communication, 'recipient.reference').split("/")[1]){
+          telecomString = get(communication, 'recipient.reference').split("/")[1];
+        }
+      }
+
+
       result.subject = get(communication, 'subject.display') ? get(communication, 'subject.display') : get(communication, 'subject.reference')
       result.recipient = get(communication, 'recipient[0].display') ? get(communication, 'recipient[0].display') : get(communication, 'recipient[0].reference')
       result.identifier = get(communication, 'identifier[0].type.text');
-      result.definition = get(communication, 'definition[0].display');
+      result.telecom = get(communication, 'telecom[0].value') ? get(communication, 'telecom[0].value') : telecomString;
       result.category = get(communication, 'category[0].text');
       result.payload = get(communication, 'payload[0].contentString');
+      result.status = get(communication, 'status');
 
       return result;
     });
@@ -87,6 +103,7 @@ export default class CommunicationTable extends React.Component {
       data.style.cellHideOnPhone.display = 'table-cell';
     }
 
+    console.log('CommunicationTable.data', data)
     return data;
   }
   rowClick(id){
@@ -94,7 +111,7 @@ export default class CommunicationTable extends React.Component {
     Session.set('selectedCommunication', id);
     Session.set('communicationPageTabIndex', 2);
   }
-   onSend(id){
+  onSend(id){
       let communication = Communications.findOne({_id: id});
 
       console.log("CommunicationTable.onSend()", communication);
@@ -113,20 +130,42 @@ export default class CommunicationTable extends React.Component {
           console.log("result", result);
         }
       });
+  }
+  sendCommunication(communication){
+    console.log('sendCommunication', communication)
+
+    // TODO:
+
+    switch (get(communication, 'category')) {
+      case 'SMS Text Message':
+        console.log('Sending SMS Text Message', communication.payload, communication.telecom)
+        Meteor.call('sendTwilioMessage', communication.payload, communication.telecom)
+        break;    
+      default:
+        break;
     }
+  }
   render () {
     let tableRows = [];
     for (var i = 0; i < this.data.communications.length; i++) {
+
+      let sendButton;
+      if(!get(this, 'data.communications[i].sent')){
+        sendButton = <RaisedButton primary={false} label="Send" onClick={ this.sendCommunication.bind(this, this.data.communications[i]) } style={{marginTop: '-16px'}} />
+      } else {
+        sendButton = get(this, 'data.communications[i].sent');
+      }
       tableRows.push(
         <tr key={i} className="communicationRow" style={{cursor: "pointer"}}>
           <td className='subject' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{this.data.communications[i].subject }</td>
           <td className='recipient' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{this.data.communications[i].recipient }</td>
           <td className='identifier' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{this.data.communications[i].identifier }</td>
-          <td className='definition' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{this.data.communications[i].definition }</td>
-          <td className='sent' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{this.data.communications[i].sent }</td>
+          <td className='telecom' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{this.data.communications[i].telecom }</td>
+          <td className='sent' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{ sendButton }</td>
           <td className='received' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{this.data.communications[i].received }</td>
           <td className='category' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{this.data.communications[i].category }</td>
           <td className='payload' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{this.data.communications[i].payload }</td>
+          <td className='status' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{this.data.communications[i].status }</td>
         </tr>
       );
     }
@@ -139,11 +178,12 @@ export default class CommunicationTable extends React.Component {
             <th className='subject'>subject</th>
             <th className='recipient'>recipient</th>
             <th className='identifier'>identifier</th>
-            <th className='definition'>definition</th>
+            <th className='telecom'>telecom</th>
             <th className='sent' style={{minWidth: '100px'}}>sent</th>
             <th className='received' style={{minWidth: '100px'}}>received</th>
             <th className='category' style={this.data.style.hideOnPhone}>category</th>
             <th className='payload' style={this.data.style.hideOnPhone}>payload</th>
+            <th className='status' style={this.data.style.hideOnPhone}>status</th>
           </tr>
         </thead>
         <tbody>
