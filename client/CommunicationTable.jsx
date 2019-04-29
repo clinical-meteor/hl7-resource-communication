@@ -25,6 +25,9 @@ export default class CommunicationTable extends React.Component {
         cell: {
           paddingTop: '16px'
         },
+        statusCell: {
+          paddingTop: '16px'
+        },
         avatar: {
           backgroundColor: 'rgb(188, 188, 188)',
           userSelect: 'none',
@@ -155,6 +158,19 @@ export default class CommunicationTable extends React.Component {
       } else {
         sendButton = get(this, 'data.communications[i].sent');
       }
+
+      let statusCell = {
+        fontWeight: 400,
+        color: 'black'
+      }
+
+      if(this.data.communications[i].status === "completed"){
+        statusCell.color = "green";
+      }
+      if(this.data.communications[i].status === "in-progress"){
+        statusCell.color = "darkgoldenrod";
+      }  
+
       tableRows.push(
         <tr key={i} className="communicationRow" style={{cursor: "pointer"}}>
           <td className='subject' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{this.data.communications[i].subject }</td>
@@ -165,7 +181,7 @@ export default class CommunicationTable extends React.Component {
           <td className='received' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{this.data.communications[i].received }</td>
           <td className='category' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{this.data.communications[i].category }</td>
           <td className='payload' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{this.data.communications[i].payload }</td>
-          <td className='status' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{this.data.communications[i].status }</td>
+          <td className='status' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={ statusCell }>{this.data.communications[i].status }</td>
         </tr>
       );
     }
