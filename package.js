@@ -1,6 +1,6 @@
 Package.describe({
   name: 'clinical:hl7-resource-communication',
-  version: '0.2.1',
+  version: '0.2.2',
   summary: 'HL7 FHIR Resource - Communication',
   git: 'https://github.com/dpdonohue/hl7-resource-communication',
   documentation: 'README.md'
@@ -32,7 +32,7 @@ Package.onUse(function (api) {
 
   api.imply('clinical:user-model');
 
-  api.addFiles('lib/Communications.js');
+  api.addFiles('lib/Communications.js', ['client', 'server']);
   api.addFiles('server/rest.js', 'server');
   api.addFiles('lib/meteor.methods.js', ['server', 'client']);
   api.addFiles('server/hooks.communications.js', 'server');
