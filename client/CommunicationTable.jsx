@@ -5,11 +5,16 @@ import React from 'react';
 import { ReactMeteorData } from 'meteor/react-meteor-data';
 import ReactMixin from 'react-mixin';
 import { Table } from 'react-bootstrap';
+import PropTypes from 'prop-types';
+import {Checkbox} from 'material-ui';
+
+import { FaTags, FaCode, FaPuzzlePiece, FaLock  } from 'react-icons/fa';
+import { GoTrashcan } from 'react-icons/go'
 
 import { get } from 'lodash';
 // import { Communications } from 'meteor/clinical:hl7-resource-communication';
 
-export default class CommunicationTable extends React.Component {
+export class CommunicationTable extends React.Component {
   getMeteorData() {
     let data = {
       style: {
@@ -69,7 +74,7 @@ export default class CommunicationTable extends React.Component {
       };
 
       if(get(communication, 'sent')){
-        result.sent = moment(get(communication, 'sent')).add(1, 'days').format("YYYY-MM-DD")
+        result.sent = moment(get(communication, 'sent')).add(1, 'days').format("YYYY-MM-DD hh:mm")
       }
       if(get(communication, 'received')){
         result.received = moment(get(communication, 'received')).add(1, 'days').format("YYYY-MM-DD")
@@ -79,6 +84,8 @@ export default class CommunicationTable extends React.Component {
       if(get(communication, 'recipient.reference')){
         if(get(communication, 'recipient.reference').split("/")[1]){
           telecomString = get(communication, 'recipient.reference').split("/")[1];
+        } else {
+          telecomString = get(communication, 'recipient.reference');
         }
       }
 
@@ -114,11 +121,104 @@ export default class CommunicationTable extends React.Component {
     Session.set('selectedCommunication', id);
     Session.set('communicationPageTabIndex', 2);
   }
+  renderCheckboxHeader(){
+    if (!this.props.hideCheckboxes) {
+      return (
+        <th className="toggle">Checkbox</th>
+      );
+    }
+  }
+  renderCheckbox(communication){
+    if (!this.props.hideCheckboxes) {
+      let toggleValue = false;
+      if(get(communication, 'status') === "active"){
+        toggleValue = true;
+      }
+      return (
+        <td className="toggle">
+            <Checkbox
+              defaultCheckboxd={true}
+              value={toggleValue}
+              onCheck={this.toggleCommunicationStatus.bind(this, communication)}
+            />
+          </td>
+      );
+    }
+  }
+  toggleCommunicationStatus(communication, event, toggle){
+    console.log('toggleCommunicationStatus', communication, toggle);
+    let newStatus = 'draft';
+
+    if(toggle){
+      newStatus = 'active';
+    } else {
+      newStatus = 'draft';
+    }
+
+    Communications._collection.update({_id: communication._id}, {$set: {
+      'status': newStatus
+    }}, function(error, result){
+      if(error){
+        console.error('Communication Error', error);
+      }
+    });
+  }
+  renderActionIconsHeader(){
+    if (!this.props.hideActionIcons) {
+      return (
+        <th className='actionIcons' style={{minWidth: '120px'}}>Actions</th>
+      );
+    }
+  }
+  renderActionIcons(questionnaire ){
+    if (!this.props.hideActionIcons) {
+      let iconStyle = {
+        marginLeft: '4px', 
+        marginRight: '4px', 
+        marginTop: '4px', 
+        fontSize: '120%'
+      }
+
+      return (
+        <td className='actionIcons' style={{minWidth: '120px'}}>
+          <FaTags style={iconStyle} onClick={this.onMetaClick.bind(this, questionnaire)} />
+          <GoTrashcan style={iconStyle} onClick={this.removeRecord.bind(this, questionnaire._id)} />  
+        </td>
+      );
+    }
+  } 
+  onMetaClick(patient){
+    let self = this;
+    if(this.props.onMetaClick){
+      this.props.onMetaClick(self, patient);
+    }
+  }
+  removeRecord(_id){
+    console.log('Remove communication ', _id)
+    if(this.props.onRemoveRecord){
+      this.props.onRemoveRecord(_id);
+    }
+  }
+  renderIdentifierHeader(){
+    if (!this.props.hideIdentifier) {
+      return (
+        <th className="identifier">Identifier</th>
+      );
+    }
+  }
+  renderIdentifier(questionnaire ){
+    if (!this.props.hideIdentifier) {
+      let classNames = 'identifier';
+      if(this.props.barcodes){
+        classNames = 'barcode identifier'
+      }
+      return (
+        <td className={classNames}>{ get(questionnaire, 'identifier[0].value') }</td>       );
+    }
+  }
   onSend(id){
       let communication = Communications.findOne({_id: id});
-
-      console.log("CommunicationTable.onSend()", communication);
-
+    
       var httpEndpoint = "http://localhost:8080";
       if (get(Meteor, 'settings.public.interfaces.default.channel.endpoint')) {
         httpEndpoint = get(Meteor, 'settings.public.interfaces.default.channel.endpoint');
@@ -141,8 +241,13 @@ export default class CommunicationTable extends React.Component {
 
     switch (get(communication, 'category')) {
       case 'SMS Text Message':
-        console.log('Sending SMS Text Message', communication.payload, communication.telecom)
-        Meteor.call('sendTwilioMessage', communication.payload, communication.telecom)
+        if(communication.telecom && (typeof communication.telecom === "string")){
+          console.log('Sending SMS Text Message', communication.payload, communication.telecom)
+          Meteor.call('sendTwilioMessage', communication.payload, communication.telecom)
+          Communications.update({_id: communication._id}, {$set: {
+            sent: new Date()
+          }})  
+        }
         break;    
       default:
         break;
@@ -153,12 +258,12 @@ export default class CommunicationTable extends React.Component {
     for (var i = 0; i < this.data.communications.length; i++) {
 
       let sendButton;
-      if(!get(this, 'data.communications[i].sent')){
-        sendButton = <RaisedButton primary={false} label="Send" onClick={ this.sendCommunication.bind(this, this.data.communications[i]) } style={{marginTop: '-16px'}} />
-      } else {
-        sendButton = get(this, 'data.communications[i].sent');
-      }
+      let buttonLabel = "Send";
 
+      if(this.props.actionButtonLabel){
+        buttonLabel = this.props.actionButtonLabel;
+      }
+      
       let statusCell = {
         fontWeight: 400,
         color: 'black'
@@ -171,17 +276,26 @@ export default class CommunicationTable extends React.Component {
         statusCell.color = "darkgoldenrod";
       }  
 
+      if(this.data.communications[i].sent){
+        buttonLabel = "Resend";
+      } 
+
       tableRows.push(
         <tr key={i} className="communicationRow" style={{cursor: "pointer"}}>
+          { this.renderCheckbox(this.data.communications[i]) }
+          { this.renderActionIcons(this.data.communications[i]) }
           <td className='subject' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{this.data.communications[i].subject }</td>
           <td className='recipient' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{this.data.communications[i].recipient }</td>
-          <td className='identifier' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{this.data.communications[i].identifier }</td>
           <td className='telecom' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{this.data.communications[i].telecom }</td>
-          <td className='sent' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{ sendButton }</td>
           <td className='received' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{this.data.communications[i].received }</td>
           <td className='category' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{this.data.communications[i].category }</td>
           <td className='payload' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{this.data.communications[i].payload }</td>
           <td className='status' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={ statusCell }>{this.data.communications[i].status }</td>
+          <td className='sent' style={this.data.style.cell}>{ this.data.communications[i].sent }</td>
+          <td className='actionButton' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>
+            <FlatButton primary={false} label={buttonLabel} onClick={ this.sendCommunication.bind(this, this.data.communications[i]) } style={{marginTop: '-16px'}} />
+          </td>
+          { this.renderIdentifier(this.data.communications[i]) }
         </tr>
       );
     }
@@ -191,15 +305,18 @@ export default class CommunicationTable extends React.Component {
       <Table id='communicationsTable' hover >
         <thead>
           <tr>
-            <th className='subject'>subject</th>
-            <th className='recipient'>recipient</th>
-            <th className='identifier'>identifier</th>
-            <th className='telecom'>telecom</th>
-            <th className='sent' style={{minWidth: '100px'}}>sent</th>
-            <th className='received' style={{minWidth: '100px'}}>received</th>
-            <th className='category' style={this.data.style.hideOnPhone}>category</th>
-            <th className='payload' style={this.data.style.hideOnPhone}>payload</th>
-            <th className='status' style={this.data.style.hideOnPhone}>status</th>
+            { this.renderCheckboxHeader() }
+            { this.renderActionIconsHeader() }
+            <th className='subject'>Subject</th>
+            <th className='recipient'>Recipient</th>
+            <th className='telecom'>Telecom</th>
+            <th className='received' style={{minWidth: '100px'}}>Received</th>
+            <th className='category' style={this.data.style.hideOnPhone}>Category</th>
+            <th className='payload' style={this.data.style.hideOnPhone}>Payload</th>
+            <th className='status' style={this.data.style.hideOnPhone}>Status</th>
+            <th className='sent' style={{minWidth: '100px'}}>Sent</th>
+            <th className='actionButton' style={{minWidth: '100px'}}>Action</th>
+            { this.renderIdentifierHeader() }
           </tr>
         </thead>
         <tbody>
@@ -211,5 +328,22 @@ export default class CommunicationTable extends React.Component {
   }
 }
 
+CommunicationTable.propTypes = {
+  data: PropTypes.array,
+  fhirVersion: PropTypes.string,
+  query: PropTypes.object,
+  paginationLimit: PropTypes.number,
+  hideIdentifier: PropTypes.bool,
+  hideCheckboxes: PropTypes.bool,
+  hideBarcodes: PropTypes.bool,
+  hideActionIcons: PropTypes.bool,
+  onCellClick: PropTypes.func,
+  onRowClick: PropTypes.func,
+  onMetaClick: PropTypes.func,
+  onRemoveRecord: PropTypes.func,
+  onActionButtonClick: PropTypes.func,
+  actionButtonLabel: PropTypes.string
+};
 
 ReactMixin(CommunicationTable.prototype, ReactMeteorData);
+export default CommunicationTable;

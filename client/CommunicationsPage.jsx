@@ -10,7 +10,7 @@ import { ReactMeteorData } from 'meteor/react-meteor-data';
 import ReactMixin from 'react-mixin';
 
 import { Session } from 'meteor/session';
-
+import PropTypes from 'prop-types';
 
 let defaultCommunication = {
   index: 2,
@@ -80,7 +80,14 @@ export class CommunicationsPage extends React.Component {
               title="Communication Log"
             />
             <CardText>
-              <CommunicationTable showBarcodes={true} />
+              <CommunicationTable 
+                showBarcodes={true} 
+                hideIdentifier={true}
+                onRemoveRecord={function(recordId){
+                  Communications._collection.remove({_id: recordId})
+                }}
+                actionButtonLabel="Enroll"
+              />
             </CardText>
           </GlassCard>
         </FullPageCanvas>
