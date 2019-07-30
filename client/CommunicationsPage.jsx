@@ -84,7 +84,7 @@ export class CommunicationsPage extends React.Component {
                 showBarcodes={true} 
                 hideIdentifier={true}
                 onRemoveRecord={function(recordId){
-                  Communications._collection.remove({_id: recordId})
+                  Communications.remove({_id: recordId})
                 }}
                 actionButtonLabel="Enroll"
               />

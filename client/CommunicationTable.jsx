@@ -81,19 +81,29 @@ export class CommunicationTable extends React.Component {
       }
 
       let telecomString = "";
-      if(get(communication, 'recipient.reference')){
-        if(get(communication, 'recipient.reference').split("/")[1]){
-          telecomString = get(communication, 'recipient.reference').split("/")[1];
-        } else {
-          telecomString = get(communication, 'recipient.reference');
-        }
+      let communicationString = "";
+
+      if(typeof get(communication, 'recipient[0].reference') === "string"){
+        communicationString = get(communication, 'recipient[0].reference', '');
+      } else if(typeof get(communication, 'recipient.reference') === "string"){
+        communicationString = get(communication, 'recipient.reference', '');
+      }
+      
+      if(communicationString.split("/")[1]){
+        telecomString = communicationString.split("/")[1];
+      } else {
+        telecomString = communicationString;
       }
 
+      if(telecomString.length > 0){
+        result.telecom = telecomString;
+      } else {
+        result.telecom = get(communication, 'telecom[0].value', '');
+      }
 
       result.subject = get(communication, 'subject.display') ? get(communication, 'subject.display') : get(communication, 'subject.reference')
       result.recipient = get(communication, 'recipient[0].display') ? get(communication, 'recipient[0].display') : get(communication, 'recipient[0].reference')
       result.identifier = get(communication, 'identifier[0].type.text');
-      result.telecom = get(communication, 'telecom[0].value') ? get(communication, 'telecom[0].value') : telecomString;
       result.category = get(communication, 'category[0].text');
       result.payload = get(communication, 'payload[0].contentString');
       result.status = get(communication, 'status');
@@ -137,7 +147,7 @@ export class CommunicationTable extends React.Component {
       return (
         <td className="toggle">
             <Checkbox
-              defaultCheckboxd={true}
+              defaultChecked={true}
               value={toggleValue}
               onCheck={this.toggleCommunicationStatus.bind(this, communication)}
             />
@@ -290,7 +300,7 @@ export class CommunicationTable extends React.Component {
           <td className='received' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{this.data.communications[i].received }</td>
           <td className='category' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{this.data.communications[i].category }</td>
           <td className='payload' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>{this.data.communications[i].payload }</td>
-          <td className='status' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={ statusCell }>{this.data.communications[i].status }</td>
+          <td className='status' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={ this.data.style.statusCell }>{this.data.communications[i].status }</td>
           <td className='sent' style={this.data.style.cell}>{ this.data.communications[i].sent }</td>
           <td className='actionButton' onClick={ this.rowClick.bind('this', this.data.communications[i]._id)} style={this.data.style.cell}>
             <FlatButton primary={false} label={buttonLabel} onClick={ this.sendCommunication.bind(this, this.data.communications[i]) } style={{marginTop: '-16px'}} />
